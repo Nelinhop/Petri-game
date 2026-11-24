@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Placa de Petri</title>
+  <style>
+    :root {
+      --bg: #e9efe6; --texto: #1f2a24; --agar: #dcead2; --borda-prato: #b9c9c4;
+      --grade: #c3d6b8; --viva: #2f6f5e; --viva-brilho: #7fd1b0; --botao: #2f6f5e; --botao-texto: #fff;
+      --painel: #f7faf5;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #14201b; --texto: #e3efe8; --agar: #1f3228; --borda-prato: #4b6a60;
+        --grade: #2c4639; --viva: #8be0bc; --viva-brilho: #d6fff0; --botao: #8be0bc; --botao-texto: #10201a;
+        --painel: #1a2b23;
+      }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Georgia, 'Times New Roman', serif; background: var(--bg); color: var(--texto); }
+    main { max-width: 460px; margin: 0 auto; padding: 16px; }
+    h1 { font-size: 1.5rem; margin: 4px 0 12px; }
+    .placar { display: flex; gap: 12px; margin-bottom: 12px; }
+    .placar div { flex: 1; background: var(--painel); border-radius: 10px; padding: 8px 12px; }
+    .placar strong { display: block; font-size: 1.6rem; font-variant-numeric: tabular-nums; }
+    .placar span { font-size: .85rem; }
+    .prato { background: var(--agar); border: 6px solid var(--borda-prato); border-radius: 18px; padding: 8px; overflow: auto; display: flex; justify-content: center; }
+    .grade { display: grid; gap: 1px; background: var(--grade); border: 1px solid var(--grade); }
+    .celula { background: var(--agar); border: 0; padding: 0; cursor: pointer; }
+    .celula.viva { background: radial-gradient(circle at 35% 35%, var(--viva-brilho), var(--viva) 70%); border-radius: 40%; }
+    .grade.travada .celula { cursor: default; }
+    .controles { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    button.acao { flex: 1 1 30%; padding: 12px 8px; font: inherit; font-size: 1rem; border: 0; border-radius: 10px; background: var(--botao); color: var(--botao-texto); cursor: pointer; }
+    button.acao.sec { background: var(--painel); color: var(--texto); border: 1px solid var(--borda-prato); }
+    button:focus-visible, input:focus-visible { outline: 3px solid var(--viva-brilho); outline-offset: 2px; }
+    .ajustes { margin-top: 12px; display: grid; gap: 10px; background: var(--painel); border-radius: 10px; padding: 12px; }
+    .ajustes label { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .ajustes input[type=number] { width: 72px; font: inherit; padding: 6px; }
+    .ajustes input[type=range] { flex: 1; }
+    .dica { font-size: .85rem; margin: 10px 2px 0; opacity: .8; }
+  </style>
+</head>
+<body>
+  <main id="app">
+    <h1>Placa de Petri</h1>
+
+    <section class="placar" aria-live="polite">
+      <div><strong>{{ geracao }}</strong><span>Geração</span></div>
+      <div><strong>{{ vivas }}</strong><span>Células vivas</span></div>
+    </section>
+
+    <section class="prato">
+      <div class="grade" :class="{ travada: rodando }"
+           :style="{ gridTemplateColumns: `repeat(${tamanho}, ${pxCelula}px)`, gridAutoRows: pxCelula + 'px' }">
+        <template v-for="(linha, i) in grade" :key="i">
+          <button v-for="(viva, j) in linha" :key="j" class="celula" :class="{ viva }"
+                  :aria-label="`Linha ${i + 1}, coluna ${j + 1}: ${viva ? 'viva' : 'morta'}`"
+                  @click="alternarCelula(i, j)"></button>
+        </template>
+      </div>
+    </section>
+    <p class="dica">{{ rodando ? 'Pause para editar as células.' : 'Toque nas células para marcá-las como vivas ou mortas.' }}</p>
+
+    <section class="controles">
+      <button class="acao" @click="alternarExecucao">{{ rodando ? 'Pausar' : (geracao > 0 ? 'Continuar' : 'Iniciar') }}</button>
+      <button class="acao sec" @click="passo">Próxima geração</button>
+      <button class="acao sec" @click="reiniciar">Reiniciar</button>
+    </section>
+
+    <section class="ajustes">
+      <label>Tamanho da grade ({{ TAM_MIN }} a {{ TAM_MAX }})
+        <input type="number" v-model.number="tamanho" :min="TAM_MIN" :max="TAM_MAX" @change="mudarTamanho">
+      </label>
+      <label>Intervalo: {{ velocidade }} ms
+        <input type="range" min="50" max="1000" step="50" v-model.number="velocidade" @input="mudarVelocidade">
+      </label>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/vue@3.5.13/dist/vue.global.prod.js"></script>
+  <script src="life.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+{
+  "name": "simulador-placa-de-petri",
+  "version": "1.0.0",
+  "description": "Simulador de placa de petri (Jogo da Vida) com Node.js, Express e Vue",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "dependencies": { "express": "^4.21.2" }
+}
